@@ -122,10 +122,12 @@ try {
   await clickCard(ids[1], { modifiers: 2 });
   await main.key("c", { code: "KeyC", vk: 67, ctrl: true });
   await sleep(800);
+  // the toast only stays ~2.6 s: read it before the (slow) PowerShell clipboard check
+  const toast = await main.eval(`document.querySelector('[data-testid="grid-toast"]')?.textContent ?? ''`);
   const clip = ps("clipboard").trim().split(/\r?\n/).filter(Boolean);
   const want = [await nameOf(ids[0]), await nameOf(ids[1])];
   check("Ctrl+C copies the selected files themselves (paste into Explorer / a web upload)", clip.length === 2 && want.every((n) => clip.some((c) => c.endsWith(n))), clip.map((c) => path.basename(c)).join(", "));
-  check("…and says so", /Copied 2 files/.test((await main.eval(`document.querySelector('[data-testid="grid-toast"]')?.textContent ?? ''`))));
+  check("…and says so", /Copied 2 files/.test(toast), toast);
   await main.key("a", { code: "KeyA", vk: 65, ctrl: true });
   await sleep(300);
   const selCount = await main.eval(`[...document.querySelectorAll('[data-media-id]')].filter(e => e.className.includes('color-accent')).length`);

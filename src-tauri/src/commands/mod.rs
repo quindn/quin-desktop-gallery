@@ -1,0 +1,15 @@
+pub mod actions;
+pub mod files_out;
+pub mod studio;
+pub mod ai;
+pub mod browser;
+pub mod duplicates;
+pub mod editor;
+pub mod lan;
+pub mod lock;
+pub mod media;
+pub mod online;
+pub mod playback;
+pub mod root;
+pub mod settings;
+pub mod tags;

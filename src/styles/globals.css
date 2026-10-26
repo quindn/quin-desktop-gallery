@@ -1,0 +1,272 @@
+@import "tailwindcss";
+
+@theme {
+  /* Surfaces (back -> front), see UI_SPEC.md. Dark is the default and is
+     true, full black — not a near-black gray — per spec: an OLED-style
+     "deep dark" rather than the more common dark-gray app chrome. Card/panel
+     surfaces still step up from it slightly so content has a floor to sit
+     on against a pure-black canvas. Overridden wholesale for light mode
+     below via [data-theme="light"]. */
+  --color-canvas: #000000;
+  --color-panel: #0a0a0a;
+  --color-card: #141414;
+  --color-card-hover: #1e1e1e;
+
+  --color-hairline: rgba(255, 255, 255, 0.09);
+  --color-hairline-strong: rgba(255, 255, 255, 0.14);
+  /* Chrome bars (sidebar/toolbar): translucent but solid enough to read
+     content against reliably — iOS "thin material," not a see-through pane. */
+  --color-glass: rgba(10, 12, 16, 0.58);
+  /* Floating menus/popovers/sheets: closer to opaque — iOS "thick material" —
+     since they must stay legible over arbitrary photo/video content. */
+  --color-menu: rgba(12, 12, 12, 0.95);
+
+  --color-text-primary: rgba(255, 255, 255, 0.94);
+  --color-text-secondary: rgba(255, 255, 255, 0.58);
+  --color-text-tertiary: rgba(255, 255, 255, 0.38);
+
+  /* A calmer periwinkle rather than saturated system blue — reads softer
+     against the dark palette while still popping on primary actions. */
+  --color-accent: #6673e0;
+  --color-accent-soft: rgba(102, 115, 224, 0.16);
+
+  --shadow-float: 0 4px 16px rgba(0, 0, 0, 0.35), 0 16px 48px rgba(0, 0, 0, 0.45);
+  --shadow-sheet: 0 20px 70px rgba(0, 0, 0, 0.6);
+
+  /* Pill-shaped controls (inputs, buttons, chips, segmented pills) — the
+     radius is deliberately larger than any control is tall, so the browser
+     caps it at a perfect capsule automatically. Cards/sheets get a softer
+     but still rectangular corner. */
+  --radius-control: 999px;
+  --radius-card: 18px;
+  --radius-sheet: 26px;
+
+  --font-sans: "SF Pro Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+
+  /* The window backdrop is a photo seen through fogged glass (see
+     .app-backdrop below); the old gradient "glow" is switched off so it
+     doesn't tint the photo. */
+  --hero-glow: linear-gradient(transparent, transparent);
+  --backdrop-image: url("../assets/bg-dark.jpg");
+  /* Keeps text/thumbnail edges legible over the photo. */
+  --backdrop-veil: linear-gradient(180deg, rgba(0, 0, 0, 0.26), rgba(0, 0, 0, 0.44));
+  --scrollbar-thumb: rgba(255, 255, 255, 0.14);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.22);
+  --scrollbar-track: transparent;
+}
+
+/* Light mode — a soft, warm off-white rather than stark white (echoing the
+   misty, atmospheric tone of the reference image), same periwinkle accent
+   carried over for continuity between the two modes. Toggled in Settings;
+   applied as a data attribute on <html> by themeStore. */
+:root[data-theme="light"] {
+  --color-canvas: #f4f2ee;
+  --color-panel: #ffffff;
+  --color-card: #ffffff;
+  --color-card-hover: #eeece7;
+
+  --color-hairline: rgba(20, 18, 14, 0.08);
+  --color-hairline-strong: rgba(20, 18, 14, 0.14);
+  --color-glass: rgba(255, 255, 255, 0.56);
+  --color-menu: rgba(255, 255, 255, 0.96);
+
+  --color-text-primary: rgba(24, 22, 20, 0.92);
+  --color-text-secondary: rgba(24, 22, 20, 0.62);
+  --color-text-tertiary: rgba(24, 22, 20, 0.42);
+
+  --color-accent: #5457c9;
+  --color-accent-soft: rgba(84, 87, 201, 0.12);
+
+  --shadow-float: 0 4px 16px rgba(30, 25, 15, 0.08), 0 16px 48px rgba(30, 25, 15, 0.1);
+  --shadow-sheet: 0 20px 70px rgba(30, 25, 15, 0.16);
+
+  --hero-glow: linear-gradient(transparent, transparent);
+  --backdrop-image: url("../assets/bg-light.jpg");
+  --backdrop-veil: linear-gradient(180deg, rgba(248, 246, 242, 0.34), rgba(248, 246, 242, 0.5));
+  --scrollbar-thumb: rgba(20, 18, 14, 0.16);
+  --scrollbar-thumb-hover: rgba(20, 18, 14, 0.26);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* The photo behind everything, seen through fogged-up window glass (the
+   fog, wipe marks and droplets are baked into the image — see
+   scripts/make-backdrops.py). Sits at the bottom of App's stacking context;
+   the translucent .glass chrome frosts it further with backdrop-filter. */
+.app-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+  background: var(--backdrop-image) center / cover no-repeat, var(--color-canvas);
+  /* Own compositor layer: never repainted while content scrolls above it. */
+  transform: translateZ(0);
+}
+
+.app-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--backdrop-veil);
+}
+
+body {
+  /* A soft glow top-center, faint enough to read as depth rather than a
+     color — the same "moody gradient" feeling as the reference, without a
+     literal photo (doesn't fit a media browser). Differs per theme via
+     --hero-glow (a warm dawn-sky pair of glows in light mode, a single
+     periwinkle glow in dark mode). */
+  background: var(--hero-glow), var(--color-canvas);
+  background-attachment: fixed;
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+
+.glass {
+  background: var(--color-glass);
+  backdrop-filter: blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border: 1px solid var(--color-hairline);
+  position: relative;
+}
+
+/* Subtle top highlight, like an iOS material catching light at its edge. */
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  pointer-events: none;
+}
+
+.menu-surface {
+  background: var(--color-menu);
+  backdrop-filter: blur(30px) saturate(1.6);
+  -webkit-backdrop-filter: blur(30px) saturate(1.6);
+  border: 1px solid var(--color-hairline-strong);
+  box-shadow: var(--shadow-float);
+}
+
+.sheet-surface {
+  background: var(--color-menu);
+  backdrop-filter: blur(30px) saturate(1.6);
+  -webkit-backdrop-filter: blur(30px) saturate(1.6);
+  border: 1px solid var(--color-hairline-strong);
+  box-shadow: var(--shadow-sheet);
+}
+
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+.drag {
+  -webkit-app-region: drag;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 160ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes flash {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.7);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-9px);
+  }
+  40% {
+    transform: translateX(8px);
+  }
+  60% {
+    transform: translateX(-5px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}
+
+.animate-shake {
+  animation: shake 320ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+.animate-pop-in {
+  animation: pop-in 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform-origin: top right;
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-sheet-in {
+  animation: sheet-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
